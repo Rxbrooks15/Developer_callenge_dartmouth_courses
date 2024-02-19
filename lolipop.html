@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+</head>
+<body>
+    <!-- Add title -->
+    
+
+    <!-- Add buttons for State -->
+    <button class="btn btn-primary" onclick="update('Sales', 'State')">Total Sales by State</button>
+    <button class="btn btn-primary" onclick="update('Profit', 'State')">Total Profit by State</button>
+
+    <!-- Add buttons for Sub-Category -->
+    <button class="btn btn-primary" onclick="update('Sales', 'Sub-Category')">Total Sales by Sub-Category</button>
+    <button class="btn btn-primary" onclick="update('Profit', 'Sub-Category')">Total Profit by Sub-Category</button>
+    <div class="title" style="text-align: center; font-size: 20px; font-family: serif;">Total Sales and Profit by State and Sub-Categories</div>
+    <!-- Create a div where the graph will take place -->
+    <div id="my_dataviz"></div>
+   
+
+    <script>
+        // set the dimensions and margins of the graph
+        const margin = { top: 30, right: 30, bottom: 70, left: 60 },
+            width = window.innerWidth * 0.98 - margin.left - margin.right,
+            height = window.innerHeight * 0.93 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        const svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .style("background-color", "silver")  // Set background color
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        // Initialize the Y axis
+        const y = d3.scaleLinear()
+            .range([height, 0]);  // Reversed range
+
+        const yAxis = svg.append("g")
+            .attr("class", "myYaxis");
+
+        // Initial xAxisPosition
+        let xAxisPosition = height;
+
+        // A function that creates / updates the plot for a given variable and column:
+        function update(selectedVar, column) {
+            // Remove previous xAxis
+            svg.selectAll(".x-axis").remove();
+
+            // Parse the Data
+            d3.csv("superstore.csv").then(function (data) {
+                // Remove NA and blank values
+                data = data.filter(function (d) {
+                    return d[column] !== "NA" && d[column] !== "";
+                });
+
+                // Group data by the specified column and calculate total sales or profit
+                const columnData = d3.group(data, d => d[column]);
+                const totalData = Array.from(columnData, ([value, values]) => ({
+                    value: value,
+                    total: d3.sum(values, d => +d[selectedVar]),
+                }));
+
+                // Reset the X axis conditions based on the selected variable and column
+                let x = d3.scaleBand()
+                    .range([0, width])
+                    .padding(1);
+
+                if (selectedVar === 'Profit' && column === 'State') {
+                    xAxisPosition = height / 1.35;
+                } else if (selectedVar === 'Profit' && column === 'Sub-Category') {
+                    xAxisPosition = height / 1.35;
+                } else {
+                    xAxisPosition = height;
+                }
+
+                const xAxis = svg.append("g")
+                    .attr("class", "x-axis")
+                    .attr("transform", `translate(0, ${xAxisPosition})`);
+
+                // X axis
+                x.domain(totalData.map(function (d) { return d.value; }))
+                xAxis.transition().duration(1000).call(d3.axisBottom(x))
+                    .selectAll("text")
+                    .attr("transform", "rotate(-90)")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.75em")  // Adjust the horizontal position
+                    .attr("dy", "-0.5em");  // Adjust the vertical position
+
+                // Y axis with zero always included
+                y.domain([d3.min([0, d3.min(totalData, function (d) { return d.total; })]), d3.max(totalData, function (d) { return d.total; })]);
+                yAxis.transition().duration(1000).call(d3.axisLeft(y))
+                    .selectAll("text")
+                    .style("font-size", "14px");  // Adjust Y axis label font size
+
+                // variable u: map data to existing lines
+                const lines = svg.selectAll(".myLine")
+                    .data(totalData)
+                // update lines
+                lines
+                    .join("line")
+                    .attr("class", "myLine")
+                    .transition()
+                    .duration(1000)
+                    .attr("x1", function (d) { return x(d.value); })
+                    .attr("x2", function (d) { return x(d.value); })
+                    .attr("y1", function (d) { return y(0); }) // Always at y = 0
+                    .attr("y2", function (d) { return y(d.total); })
+                    .attr("stroke", "grey")
+                    .attr("stroke-width", 2);  // Set line thickness
+
+                // variable u: map data to existing circles
+                const circles = svg.selectAll("circle")
+                    .data(totalData)
+                // update circles
+                circles
+                    .join("circle")
+                    .transition()
+                    .duration(1000)
+                    .attr("cx", function (d) { return x(d.value); })
+                    .attr("cy", function (d) { return y(d.total); })
+                    .attr("r", 8)
+                    .attr("fill", "orange")  // Set circle background color
+                    .attr("stroke", "black")  // Set circle border color
+                    .attr("stroke-width", 2);  // Set circle border thickness
+
+            })
+        }
+
+        // Initialize plot with default values (Sales by State)
+        update('Sales', 'State');
+    </script>
+</body>
+</html>

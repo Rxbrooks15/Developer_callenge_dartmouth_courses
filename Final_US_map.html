@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <style type="text/css">
+    /* On mouse hover, lighten state color */
+    path:hover {
+      fill-opacity: .7;
+    }
+
+    /* Style for Custom Tooltip */
+    div.tooltip {   
+      position: absolute;           
+      text-align: left;           
+      width: 250px;                  /* Increase tooltip width */
+      height: 100px;                 /* Increase tooltip height */
+      padding: 10px;                 /* Adjust padding */
+      font: 14px sans-serif;         /* Adjust font size */
+      background: white;   
+      border: 1px solid #0b0a0a;      /* Add border */
+      border-radius: 8px;           
+      pointer-events: none;         
+    }
+
+    /* Legend Font Style */
+    body {
+      font: 11px sans-serif;
+      margin: 0;                     /* Remove margin */
+      overflow: hidden;              /* Hide overflow */
+    }
+
+    /* Legend Position Style */
+    .legend {
+      position:absolute;
+      right: 10px;                   /* Move legend to the right */
+      top: 50px;                     /* Adjust top position */
+    }
+
+    /* Center the title */
+    .title {
+      text-align: center;
+      font-size: 20px;
+      font-family: serif;            /* Change font to serif */
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">Total Profits of an American Superstore</div>
+  <script type="text/javascript">
+
+    // Width and height of the map
+    var width = window.innerWidth;    // Use window.innerWidth to get the full width of the page
+    var height = window.innerHeight;  // Use window.innerHeight to get the full height of the page
+
+    // D3 Projection
+    var projection = d3.geo.albersUsa()
+                       .translate([width/2, height/2])    // translate to the center of the screen
+                       .scale([1200]);         // scale things down to fill the entire page
+
+    // Define path generator
+    var path = d3.geo.path()               // path generator that will convert GeoJSON to SVG paths
+                 .projection(projection);  // tell the path generator to use the albersUsa projection
+
+    // Define linear scale for output
+    var color = d3.scale.linear()
+                  .range(["#021cff", "#7000dc", "#97009d", "#b52046", "#e00000"]);
+
+    var legendText = ["High Positive Profit", "Positive Profit", "Moderate Profit", "Negative Profit", "High Negative Profit"];
+
+    // Create SVG element and append map to the SVG
+    var svg = d3.select("body")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+    // Append Div for tooltip to SVG
+    var div = d3.select("body")
+                .append("div")   
+                .attr("class", "tooltip")               
+                .style("opacity", 0);
+
+    // Load in the states data and calculate total profit, total sales, average discount, and total quantity for each state
+    d3.csv("superstore.csv", function(data) {
+      var stateData = {};
+      var stateNumberData = {};  // Add this line
+      var minProfit = Infinity;
+      var maxProfit = -Infinity;
+
+      data.forEach(function(d) {
+        var state = d.State; // Adjust the column name according to your CSV file
+        var profit = +d.Profit; // Adjust the column name according to your CSV file
+        var sales = +d.Sales; // Adjust the column name according to your CSV file
+        var discount = +d.Discount; // Adjust the column name according to your CSV file
+        var quantity = +d.Quantity; // Adjust the column name according to your CSV file
+
+        // Check if profit, sales, discount, and quantity are valid numbers and state is not empty
+        if (!isNaN(profit) && !isNaN(sales) && !isNaN(discount) && !isNaN(quantity) && state.trim() !== "") {
+          if (stateData[state]) {
+            stateData[state].profit += profit;
+            stateData[state].sales += sales;
+            stateData[state].discount += discount;
+            stateData[state].quantity += quantity;
+          } else {
+            stateData[state] = { profit, sales, discount, quantity };
+          }
+
+          // Update min and max profit values
+          minProfit = Math.min(minProfit, profit);
+          maxProfit = Math.max(maxProfit, profit);
+        }
+      });
+
+      var rangeWidths = [-22000, -10000, 0, 10000, 50000];
+      
+      for (var state in stateData) {
+        var profitValue = stateData[state].profit;
+        var salesValue = stateData[state].sales;
+        var discountValue = stateData[state].discount;
+        var quantityValue = stateData[state].quantity;
+
+        var roundedProfit = profitValue.toFixed(2);  // Round profit to 2 decimal places 
+        var roundedSales = salesValue.toFixed(2);  // Round sales to 2 decimal places
+        var averageDiscount = (discountValue / quantityValue).toFixed(2);  // Calculate average discount per state
+        var roundedQuantity = quantityValue.toFixed(0);  // Round quantity to the nearest integer
+        var bucket = getBucket(roundedProfit, rangeWidths);
+        var bucketIndex = parseInt(bucket.split(' ')[1]) - 1;
+        // Ensure the state number is between 0 and 4
+        var stateNumber = Math.max(0, Math.min(bucketIndex, 4));  // Fix this line
+
+        stateNumberData[state] = { profit: roundedProfit, sales: roundedSales, averageDiscount, quantity: roundedQuantity, stateNumber };  // Fix this line
+      }
+
+      color.domain([0, 1, 2, 3, 4]); // setting the range of the input data
+
+      // Load GeoJSON data and merge with states data
+      d3.json("us-states.json", function(json) {
+
+        // Bind the data to the SVG and create one path per GeoJSON feature
+        svg.selectAll("path")
+          .data(json.features)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .style("stroke", "#fff")
+          .style("stroke-width", "1")
+          .style("fill", function(d) {
+            // Get data value
+            var value = stateNumberData[d.properties.name];
+
+            if (value !== undefined) {
+              // If value exists…
+              return color(value.stateNumber);
+            } else {
+              // If value is undefined…
+              return "rgb(213,222,217)";
+            }
+          })
+          .on("mouseover", function(d) {      
+            div.transition()        
+               .duration(200)      
+               .style("opacity", .9);      
+               div.html("<strong>" + d.properties.name + "</strong><br>" +
+                        "Profit: $" + stateData[d.properties.name].profit + "<br>" +
+                        "Sales: $" + stateData[d.properties.name].sales + "<br>" +
+                        "Average Discount: " + stateNumberData[d.properties.name].averageDiscount + "<br>" +
+                        "Quantity: " + stateData[d.properties.name].quantity)
+               .style("left", (d3.event.pageX) + "px")     
+               .style("top", (d3.event.pageY - 28) + "px");    
+          })   
+          .on("mouseout", function(d) {       
+              div.transition()        
+                 .duration(500)      
+                 .style("opacity", 0);   
+          });
+
+        // Modified Legend Code from Mike Bostock: http://bl.ocks.org/mbostock/3888852
+        var legend = d3.select("body").append("svg")
+                      .attr("class", "legend")
+                      .attr("width", 140)
+                      .attr("height", 200)
+                      .selectAll("g")
+                      .data(color.domain().slice().reverse())
+                      .enter()
+                      .append("g")
+                      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        legend.append("rect")
+          .attr("width", 18)
+          .attr("height", 18)
+          .style("fill", color);
+
+        legend.append("text")
+          .data(legendText)
+          .attr("x", 24)
+          .attr("y", 9)
+          .attr("dy", ".35em")
+          .text("Total Profit per State");  // Change legend text
+      });
+    });
+
+    function getBucket(value, ranges) {
+      for (var i = 0; i < ranges.length - 1; i++) {
+        if (value >= ranges[i] && value <= ranges[i + 1]) {
+          return "Bucket " + (i + 1);
+        }
+      }
+      return "Bucket " + ranges.length;
+    }
+  </script>
+</body>
+</html>
