@@ -13,6 +13,7 @@ https://github.com/Rxbrooks15/Developer_callenge_dartmouth_courses/assets/112977
 **Challenges:**  I encountered challenges in effectively highlighting based on color and reorganizing the legend and the colors that corresponded with the department names. Additionally the tooltip gave me challenges as it was hard to round values (to the second decimal place )within the tooltip based on information from the summarized dataset. Found it hard to decipher whether a regression model would have done better at highlighting the overall trend in the data (Diregarded model because it would be distracting from the main purpose of the visual).
 
 **Second visualization includes all points from the dataset allowing for more of a story telling element.**
+
 https://github.com/Rxbrooks15/Developer_callenge_dartmouth_courses/assets/112977778/1c7c0b3e-e991-4f4d-9cda-16fffea64647
 
 **Conclusion_2:** Visualized all departments and provided key information to each data point showing **all departments grouped based on the same first letter of their name**
