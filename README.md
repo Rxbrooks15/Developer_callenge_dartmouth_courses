@@ -1,6 +1,6 @@
 # Developer_callenge_dartmouth_courses
 
-![Screenshot (31)](https://github.com/Rxbrooks15/Developer_callenge_dartmouth_courses/assets/112977778/dd3f2fa0-718e-44d3-839c-49ed20557546)
+![Screenshot (32)](https://github.com/Rxbrooks15/Developer_callenge_dartmouth_courses/assets/112977778/bbd22451-dc40-4023-a60f-08fef2f71598)
 
 **Objective:** Perform the needed data cleaning steps to visualize data from superstore.csv in D3. Conduct a comprehensive data analysis and generate visual representations that encapsulate the essence of the dataset, without looking at the data.
 
