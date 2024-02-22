@@ -17,6 +17,7 @@ https://github.com/Rxbrooks15/Developer_callenge_dartmouth_courses/assets/112977
 https://github.com/Rxbrooks15/Developer_callenge_dartmouth_courses/assets/112977778/1c7c0b3e-e991-4f4d-9cda-16fffea64647
 
 **Conclusion_2:** Visualized all departments and provided key information to each data point showing **all departments grouped based on the same first letter of their name**
+
 **Challenges_2:** The main challenge with this visualization was the brush tooltip interfering with the hover feature. I had no idea how to combine the two features so instead produced another for each separate feature so users could choose the graph they want to view based on the feature they were interested in using. Found it hard to color code the points so I grouped the points based on departments with the same first letter. 
 
 
