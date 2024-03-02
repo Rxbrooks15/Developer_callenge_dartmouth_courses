@@ -1,11 +1,10 @@
-<!DOCTYPE html>
+Note: Use the mouse cursor to hover over points for more information for each specific course. Click the button to toggle the hover feature!<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v6.js"></script>
-    <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
     <style>
         .bubbles {
             stroke-width: 2px;
@@ -42,13 +41,11 @@
 
 <body style="margin: 0;">
 
-    
-
-    <!-- Create a div where the graph will take place -->
+    <!-- Creates a div where the graph will take place -->
     <div id="dataviz_brushZoom"></div>
 
     <!-- Add title -->
-    <div id="title" style="text-align: center; font-size: 30px; font-family: serif; margin: 10px;">Dot plot of Dartmouth Courses based on GPA and Enrollments</div>
+    <div id="title" style="text-align: center; font-size: 30px; font-family: serif; margin: 10px;">Scatter Plot of Dartmouth Courses based on GPA and Enrollments</div>
     <div id="my_dataviz"></div>
 
     <script>
@@ -57,10 +54,13 @@
             originalWidth = window.innerWidth - margin.left - margin.right,
             originalHeight = window.innerHeight - margin.top - margin.bottom;
 
-        const width = originalWidth * 2; // Make 15% smaller
-        const height = originalHeight * 0.99; // Make 15% smaller;
+        const width = originalWidth * 2; // Make 2x larger. Want to stretch out x axis 
+        const height = originalHeight * 0.8; // Make 20% smaller;
 
         // Custom color palette with 18 unique colors
+        // Each color represents a group of departments 
+
+        // Could have based groups on a different criterion
         const customColorPalette = [
             "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
             "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
@@ -131,7 +131,7 @@
                 .attr("cy", function (d) { return y(d['Median GPA Points']); })
                 .attr("r", 4) // Fixed radius for simplicity
                 .style("fill", d => groupColorScale(groupedData.findIndex(group => group.includes(d))))
-                .style("stroke", "black") // Add a dark grey stroke to all circles
+                .style("stroke", "black") // Add black stroke to all circles
                 .style("opacity", 0.8)
                 .on("mouseover", showTooltip)
                 .on("mousemove", moveTooltip)
@@ -218,18 +218,14 @@
                 });
         });
 
-        // Add brushing
+        // Add brushing element 
         const brush = d3.brushX()
             .extent([[0, 0], [width, height]])
             .on("end", brushed);
 
-        // ...
-        // Your brushing logic here
-        // ...
-
+        //function to initiate brush feature 
         function brushed(event) {
-            // Your brushing logic here
-            // ...
+ 
         }
 
     </script>
