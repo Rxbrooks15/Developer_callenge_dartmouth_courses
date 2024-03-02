@@ -1,3 +1,4 @@
+Note: The top 10 departments by GPA are highlighted in green and the bottom 10 departments are highlighted in red. You should hover over points to read more about the department's information! Dashed line indicates average gpa between all departments.
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,7 +6,6 @@
     <meta charset="utf-8">
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v6.js"></script>
-    <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
     <style>
         .bubbles {
             stroke-width: 2px;
@@ -44,7 +44,7 @@
 </head>
 
 <body style="margin: 0;">
-    <div id="title" style="text-align: center; font-size: 30px; font-family: serif; margin: 5px;">Dot plot of Dartmouth Courses based on GPA and Enrollments</div>
+    <div id="title" style="text-align: center; font-size: 25px; font-family: serif; margin: 5px;">Bubble Chart of Dartmouth Departments based on GPA and Enrollments</div>
     <!-- Create a div where the graph will take place -->
     <div id="my_dataviz"></div>
     
@@ -55,8 +55,8 @@
             originalWidth = window.innerWidth - margin.left - margin.right,
             originalHeight = window.innerHeight - margin.top - margin.bottom;
 
-        const width = originalWidth * 0.99; // Make 15% smaller
-        const height = originalHeight * 0.9; // Make 15% smaller
+        const width = originalWidth * 0.99; // Makes 1% smaller
+        const height = originalHeight * 0.85; // Make 15% smaller
 
         // append the svg object to the body of the page
         const svg = d3.select("#my_dataviz")
@@ -73,23 +73,23 @@
 
             // Group data by department
             const groupedData = Array.from(d3.group(data, d => d.Department).values());
-
-            // Calculate average values for Median GPA Points and Enrollments
+            /// IMPORTANT 
+            // Calculate average values for Median GPA Points and Enrollments based on departments
             const averagedData = groupedData.map(group => {
                 const avgEnrollments = d3.mean(group, d => +d.Enrollments);
                 const avgMedianGPA = d3.mean(group, d => +d['Median GPA Points']);
                 return {
-                    Department: group[0].Department, // Assuming Department is the same for all entries in the group
+                    Department: group[0].Department, //  from department column
                     Enrollments: avgEnrollments,
                     'Median GPA Points': avgMedianGPA,
-                    Year: group[0].Year // Add the Year from the first entry in the group
+                    Year: group[0].Year // Adds the Year from the first entry in the group
                 };
             });
 
-            // Sort the data by Median GPA Points
+            // Sorts the data by Median GPA Points
             averagedData.sort((a, b) => a['Median GPA Points'] - b['Median GPA Points']);
 
-            // Get the top 10 and bottom 10 Departments
+            // Gets the top 10 and bottom 10 Departments
             const top10 = averagedData.slice(-10);
             const bottom10 = averagedData.slice(0, 10);
 
@@ -104,7 +104,7 @@
 
             // Add Y axis
             const y = d3.scaleLinear()
-                .domain([3, 4.1]) // Assuming the range for Median GPA Points is from 0 to 4
+                .domain([3, 4.1]) // i'll make the range for Median GPA Points go from 0 to 4
                 .range([height, 0]);
 
             svg.append("g")
@@ -135,6 +135,19 @@
                 .attr("text-anchor", "middle")
                 .attr("transform", `rotate(-90) translate(${-height / 2},${-margin.left + 20})`)
                 .text("GPA");
+                // Calculate the overall average GPA
+const overallAvgGPA = d3.mean(averagedData, d => +d['Median GPA Points']);
+
+// Add a dashed line for the overall average median GPA
+svg.append("line")
+    .attr("x1", 0)
+    .attr("y1", y(overallAvgGPA))
+    .attr("x2", width)
+    .attr("y2", y(overallAvgGPA))
+    .attr("stroke-dasharray", "5, 5")
+    .attr("stroke", "black")
+    .attr("stroke", "	#C04000") 
+    .attr("stroke-width", 2);
 
 
             // -1- Create a tooltip div that is hidden by default:
@@ -170,7 +183,7 @@
                     .style("opacity", 0);
             };
 
-            // Add dots with size based on Enrollments and color them brown
+            // Add dots with size based on Enrollments and color them teal.
             svg.append('g')
                 .selectAll("dot")
                 .data(averagedData)
