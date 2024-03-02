@@ -1,3 +1,5 @@
+Note: Use the crosshair to highlight areas you intend on zomming in on (Double click to reset chart). Highlighting a small area results in a more zoomed x-axis and selecting a larger area results in a less zoomed x-axis. 
+Click the button to toggle the hover feature!
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,36 +9,41 @@
     <script src="https://d3js.org/d3.v6.js"></script>
     <!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
     <style>
-        .bubbles {
-            stroke-width: 2px;
-            stroke: white;
-        }
+       /* Style for bubbles in the visualization */
+.bubbles {
+    stroke-width: 2px;  /* Set the stroke width for bubbles */
+    stroke: white;  /* Set the stroke color for bubbles */
+}
 
-        .bubbles:hover {
-            stroke: rgb(214, 255, 49);
-        }
+/* Hover effect for bubbles */
+.bubbles:hover {
+    stroke: rgb(214, 255, 49);  /* Change stroke color on hover */
+}
 
-        .tooltip {
-            position: absolute;
-            text-align: center;
-            padding: 5px;
-            font: 12px sans-serif;
-            background: black;
-            color: white;
-            border-radius: 5px;
-            pointer-events: none;
-        }
+/* Style for the tooltip */
+.tooltip {
+    position: absolute;  /* Set the tooltip position */
+    text-align: center;  /* Center-align text in the tooltip */
+    padding: 5px;  /* Set padding for the tooltip */
+    font: 12px sans-serif;  /* Set font style for the tooltip */
+    background: black;  /* Set background color for the tooltip */
+    color: white;  /* Set text color for the tooltip */
+    border-radius: 5px;  /* Set border radius for rounded corners */
+    pointer-events: none;  /* Ignore pointer events on the tooltip */
+}
 
-        .legend-text {
-            font-size: 10px;
-        }
+/* Style for legend text */
+.legend-text {
+    font-size: 10px;  /* Set font size for legend text */
+}
 
-        #dataviz_brushZoom button {
-            font-size: 14px;
-            padding: 2px 16px;
-            margin-top: 5px;
-            cursor: pointer;
-        }
+/* Style for buttons within the dataviz_brushZoom ID */
+#dataviz_brushZoom button {
+    font-size: 14px;  /* Set font size for buttons */
+    padding: 2px 16px;  /* Set padding for buttons */
+    margin-top: 5px;  /* Set top margin for buttons */
+    cursor: pointer;  /* Set cursor style for buttons */
+}
     </style>
 </head>
 
@@ -44,7 +51,7 @@
 
     <!-- Create a div where the circle will take place -->
     <div id="dataviz_brushZoom"></div>
-    <div id="title" style="text-align: center; font-size: 30px; font-family: serif; margin: 10px;">Dot plot of Dartmouth Courses based on GPA and Enrollments</div>
+    <div id="title" style="text-align: center; font-size: 30px; font-family: serif; margin: 10px;">Scatter Plot of Dartmouth Courses based on GPA and Enrollments</div>
 
     <!-- Create a div where the graph will take place -->
     <div id="my_dataviz"></div>
@@ -56,7 +63,7 @@
             originalHeight = window.innerHeight - margin.top - margin.bottom;
 
         const width = originalWidth * 0.99; // Make 15% smaller
-        const height = originalHeight * 0.9; // Make 15% smaller;
+        const height = originalHeight * 0.8; // Make 15% smaller;
 
         // Custom color palette with 18 unique colors
         const customColorPalette = [
@@ -109,7 +116,7 @@
 
             // Add Y axis
             const y = d3.scaleLinear()
-                .domain([2, 4.2]) // Assuming the range for Median GPA Points is from 0 to 4
+                .domain([2, 4.2]) // Median GPA actually ranges from 0 to 4
                 .range([height, 0]);
 
             svg.append("g")
@@ -127,31 +134,31 @@
                 .text("GPA");
 
 
-            // Create the scatter variable for circles
+            // Creates the scatter variable for circles
             const scatterCircles = svg.append('g')
-                .attr("clip-path", "url(#clip)"); // Apply clip path to scatter group
+                .attr("clip-path", "url(#clip)"); // Applies clip path to scatter group
 
             // Add dots with fixed size and stroke color
             scatterCircles.selectAll("circle")
                 .data(data)
                 .join("circle")
                 .attr("class", "bubbles")
-                .attr("cx", d => x(Math.round(parseFloat(d.Enrollments)))) // Round to the nearest whole number
+                .attr("cx", d => x(Math.round(parseFloat(d.Enrollments)))) // Rounds to the nearest whole number
                 .attr("cy", function (d) { return y(d['Median GPA Points']); })
                 .style("fill", d => groupColorScale(groupedData.findIndex(group => group.includes(d))))
-                .attr("r", 7) // Fixed radius for simplicity
-                .style("stroke", "black") // Add a dark grey stroke to all circles
+                .attr("r", 7) // Fixed radius 
+                .style("stroke", "black") // Adds black  stroke to all circles
                 .style("opacity", 0.9)
                 .on("mouseover", showTooltip)
                 .on("mousemove", moveTooltip)
                 .on("mouseleave", hideTooltip);
 
-            // Add brushing
-            let isBrushActive = true; // Flag to track whether the brush or zoom is active
+            // Add brushing element 
+            let isBrushActive = true; // Tracks whether the brush or zoom is active
 
             const brush = d3.brushX()
                 .extent([[0, 0], [width, height]])
-                .on("end", brushed); // Use "end" event to delay zoom until the brush is released
+                .on("end", brushed); // "end" event delays zoom until the brush is released
 
             // Increase brush interval size
             brush.extent([[0, 0], [width, height]]);
@@ -161,7 +168,7 @@
                 .attr("class", "brush")
                 .call(brush);
 
-            // A function that set idleTimeOut to null
+            //function that sets idleTimeOut to null
             var idleTimeout;
             function idled() { idleTimeout = null; }
 
@@ -185,8 +192,9 @@
                     .attr("cx", d => x(Math.round(parseFloat(d.Enrollments))))
                     .attr("cy", d => y(d['Median GPA Points']));
             }
-
+            
             // If the user double clicks, reinitialize the chart
+            // one of the harder features to impliment
             svg.on("dblclick", function () {
                 x.domain([0, 520]);
                 xAxis.transition().call(d3.axisBottom(x).tickValues(d3.range(0, 520, 20)));
@@ -218,6 +226,7 @@
                 brushGroup.call(brush.move, null);
             }
 
+            //Aesthetics---
             // Add legend
             const legend = svg.append("g")
                 .attr("transform", `translate(${width + 20}, ${margin.top})`);
@@ -298,7 +307,5 @@
                 });
         });
     </script>
-
 </body>
-
 </html>
